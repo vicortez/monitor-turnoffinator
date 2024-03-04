@@ -2,12 +2,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-// #[tauri::command]
-// fn callTurnOffWindowCommand(delaySecs: i64) -> String {
-//     let command =  Command::new( '.\\playerLogic\\Player.exe');
-
-//     return s.to_lowercase();
-// }
 
 #[derive(serde::Serialize)]
 struct Output {
@@ -26,43 +20,46 @@ async fn turn_off_monitor(delay_secs: i64, app_handle: tauri::AppHandle) -> Outp
     println!("app.path_resolver");
     println!("{}", nircmd_resource_path.display());
 
-    // let mut resources_path =
-    //     std::env::current_exe().expect("Failed to get current executable path");
-    // resources_path.pop();
-    // println!("current_exe dir");
-    // println!("{}", resources_path.display());
+    // Convert the PathBuf to a Vec of &str
+    let components: Vec<&str> = nircmd_resource_path
+        .iter()
+        .map(|os_str| os_str.to_str().unwrap())
+        .collect();
 
-    let nircmd_resource_path_str = nircmd_resource_path
-        .to_str()
-        .expect("Failed to convert path to &str");
+    // Add double quotes around each component
+    let escaped_components: Vec<String> = components
+        .iter()
+        .enumerate()
+        .map(|(count, component)| {
+            // ignore \\? and \C: in the path
+            if count > 1 {
+                format!("\"{}\"", component)
+            } else {
+                component.to_string()
+            }
+        })
+        .collect();
+
+    // Join the components back together with backslashes
+    let escaped_path = escaped_components.join("\\");
+
+    println!("escaped path");
+    println!("{}", escaped_path);
+
+    let command_to_execute = format!(
+        "Start-Job {{
+                        cmd /c start timeout /t {delay_secs} \n {escaped_path} monitor off
+                      }} | Receive-Job -Wait -AutoRemoveJob"
+    );
 
     let output = tauri::api::process::Command::new("powershell")
-        .args(&[format!(
-            "Start-Job {{
-                        cmd /c start timeout /t {delay_secs} \n {nircmd_resource_path_str} monitor off 
-                      }} | Receive-Job -Wait -AutoRemoveJob"
-        )
-        .as_str()])
+        .args(&[command_to_execute.as_str()])
         .output()
         .unwrap();
 
-    // let output = tauri::api::process::Command::new("powershell")
-    //     .args(&[
-    //         nircmd_resource_path
-    //             .to_str()
-    //             .expect("Failed to convert path to &str"),
-    //         format!(
-    //             "Start-Job {{
-    //                     cmd /c start timeout /t {delay_secs} \n nircmd monitor off
-    //                   }} | Receive-Job -Wait -AutoRemoveJob"
-    //         )
-    //         .as_str(),
-    //     ])
-    //     .output()
-    //     .unwrap();
     return Output {
-        stdout: nircmd_resource_path_str.to_string(),
-        // stdout: output.stdout,
+        // stdout: nircmd_resource_path_str.to_string(),
+        stdout: output.stdout,
         stderr: output.stderr,
         status: output.status.code().unwrap_or_default(),
     };

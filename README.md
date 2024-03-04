@@ -4,6 +4,8 @@ A simple gui app that turns off your monitor after a set delay. Windows only. (T
 
 ![Example image](public/docs_example_img.png "Example image")
 
+Warning: This is beta software (that will never be properly finished). It might have bugs and there are no guarantees of it being safe or functional. Use at own risk.
+
 # Dev infos
 
 This project was created with the Tauri + React + Typescript template.
