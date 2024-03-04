@@ -1,0 +1,46 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "Monitor turnoffinator",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "sidecar": true,
+        "execute": true,
+        "all": true,
+        "open": true
+      }
+    },
+    "windows": [
+      {
+        "title": "Monitor turnoffinator",
+        "width": 600,
+        "height": 400
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "top.cortez.monitor-turnoffinator",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "resources": ["resources/*"]
+    }
+  }
+}
